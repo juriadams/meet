@@ -16,10 +16,10 @@ After you've signed in, an API key will be displayed. Copy this key to use in St
 
 ### 3. Create Meeting Link
 
-To generate your Google Meet link, make a `POST` request to [`/create`](https://meet.jrdms.workers.dev/create) with the API key included:
+To generate your Google Meet link, make a `POST` request to [`/meet/create`](https://meet.jrdms.workers.dev/meet/create) with the API key included:
 
 ```
-curl -X POST https://meet.jrdms.workers.dev/create \
+curl -X POST https://meet.jrdms.workers.dev/meet/create \
      -H 'Authorization: Bearer <API KEY>'
 ```
 
