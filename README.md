@@ -1,6 +1,6 @@
 # Meet
 
-A straightforward web service to create personalized Google Meet links.
+A straightforward Slack app and web service to create personalized Google Meet links.
 
 ## Quick Start
 
