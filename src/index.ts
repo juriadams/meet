@@ -14,9 +14,7 @@ import { createMeet } from "./lib/meet";
 import { createSlackUser, getSlackUser } from "./db/slack";
 import { createId } from "@paralleldrive/cuid2";
 
-const app = new Hono<{ Bindings: Bindings }>();
-
-app
+const app = new Hono<{ Bindings: Bindings }>()
     // Sign in with Google.
     .get(
         "/auth/sign-in",
@@ -169,7 +167,6 @@ app
                                         type: "plain_text",
                                         text: "Sign in",
                                     },
-                                    color: "primary",
                                     url: `https://meet.jrdms.workers.dev/auth/sign-in?team=${team_id}&user=${user_id}`,
                                 },
                             ],
@@ -200,7 +197,6 @@ app
                                         type: "plain_text",
                                         text: "Sign in",
                                     },
-                                    color: "primary",
                                     url: `https://meet.jrdms.workers.dev/auth/sign-in?team=${team_id}&user=${user_id}`,
                                 },
                             ],
