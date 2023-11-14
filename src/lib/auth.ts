@@ -13,8 +13,10 @@ import { Bindings } from "../types/worker";
 export const exchangeToken = async (
     c: Context<{ Bindings: Bindings }>,
     code: string
-): Promise<AccessToken> =>
-    fetch(`https://oauth2.googleapis.com/token`, {
+): Promise<AccessToken> => {
+    const start = Date.now();
+
+    const token = await fetch(`https://oauth2.googleapis.com/token`, {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -28,6 +30,11 @@ export const exchangeToken = async (
         }),
     }).then((res) => res.json() as unknown as AccessToken);
 
+    console.log(`exchange token: ${Date.now() - start}ms`);
+
+    return token;
+};
+
 /**
  * Get a fresh access token from its associated refresh token.
  *
@@ -39,8 +46,10 @@ export const exchangeToken = async (
 export const refreshToken = async (
     c: Context<{ Bindings: Bindings }>,
     refreshToken: string
-): Promise<AccessToken> =>
-    fetch(`https://oauth2.googleapis.com/token`, {
+): Promise<AccessToken> => {
+    const start = Date.now();
+
+    const token = await fetch(`https://oauth2.googleapis.com/token`, {
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -52,3 +61,8 @@ export const refreshToken = async (
             grant_type: "refresh_token",
         }),
     }).then((res) => res.json() as unknown as AccessToken);
+
+    console.log(`refresh token: ${Date.now() - start}ms`);
+
+    return token;
+};

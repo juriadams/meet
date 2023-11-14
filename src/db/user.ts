@@ -19,13 +19,20 @@ type NewUser = typeof users.$inferInsert;
 export const getUserByEmail = async (
     c: Context<{ Bindings: Bindings }>,
     email: string
-): Promise<User | null> =>
-    db(c)
+): Promise<User | null> => {
+    const start = Date.now();
+
+    const user = await db(c)
         .select()
         .from(users)
         .where(eq(users.email, email))
         .limit(1)
         .then((users) => users[0] || null);
+
+    console.log(`get user: ${Date.now() - start}ms`);
+
+    return user;
+};
 
 /**
  * Create a new `User`.
@@ -38,9 +45,16 @@ export const getUserByEmail = async (
 export const createUser = async (
     c: Context<{ Bindings: Bindings }>,
     user: NewUser
-): Promise<User> =>
-    db(c)
+): Promise<User> => {
+    const start = Date.now();
+
+    const newUser = await db(c)
         .insert(users)
         .values(user)
         .returning()
         .then((users) => users[0]);
+
+    console.log(`create user: ${Date.now() - start}ms`);
+
+    return newUser;
+};
