@@ -1,5 +1,12 @@
 import { Calendar, Event } from "../types/calendar";
 
+/**
+ * Get all calendars for the authenticated user.
+ *
+ * @param accessToken Access token for the authenticated user.
+ *
+ * @returns Promise resolving to an array of `Calendar` objects.
+ */
 export const getCalendars = async (
     accessToken: string
 ): Promise<Calendar[]> => {
@@ -21,6 +28,13 @@ export const getCalendars = async (
     return calendars;
 };
 
+/**
+ * Get the primary calendar for the authenticated user.
+ *
+ * @param accessToken Access token for the authenticated user.
+ *
+ * @returns Promise resolving to a `Calendar` object.
+ */
 export const getPrimaryCalendar = async (
     accessToken: string
 ): Promise<Calendar> =>
@@ -28,6 +42,14 @@ export const getPrimaryCalendar = async (
         (res) => res.find((item: any) => item.primary) as Calendar
     );
 
+/**
+ * Create a new event on the given calendar.
+ *
+ * @param accessToken Access token for the authenticated user.
+ * @param calendar Calendar to create the event on.
+ *
+ * @returns Promise resolving to an `Event` object.
+ */
 export const createEvent = async (
     accessToken: string,
     calendar: string
@@ -67,6 +89,15 @@ export const createEvent = async (
     return event;
 };
 
+/**
+ * Delete an event from the given calendar.
+ *
+ * @param accessToken Access token for the authenticated user.
+ * @param calendar The calendar to delete the event from.
+ * @param event The event to delete.
+ *
+ * @returns Promise resolving to `null`.
+ */
 export const deleteEvent = async (
     accessToken: string,
     calendar: string,

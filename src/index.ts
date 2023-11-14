@@ -1,20 +1,45 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { exchangeToken, refreshToken } from "./lib/auth";
+import { exchangeToken } from "./lib/auth";
 import { Bindings } from "./types/worker";
 import { decode } from "@tsndr/cloudflare-worker-jwt";
-import { createUser, getUserByEmail } from "./db/user";
-import { createEvent, deleteEvent, getPrimaryCalendar } from "./lib/calendar";
+import {
+    createUser,
+    getUserByEmail,
+    getUserByToken,
+    getUserForSlackUser,
+} from "./db/user";
+import { createMeet } from "./lib/meet";
+import { createSlackUser, getSlackUser } from "./db/slack";
+import { createId } from "@paralleldrive/cuid2";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 app
     // Sign in with Google.
-    .get("/auth/sign-in", (c) =>
-        c.redirect(
-            `https://accounts.google.com/o/oauth2/v2/auth?client_id=${c.env.GCP_CLIENT_ID}&redirect_uri=${c.env.REDIRECT_URI}&response_type=code&prompt=consent&access_type=offline&scope=openid%20email%20profile%20https://www.googleapis.com/auth/calendar`
-        )
+    .get(
+        "/auth/sign-in",
+
+        zValidator(
+            "query",
+            z.object({
+                team: z.string().optional(),
+                user: z.string().optional(),
+            })
+        ),
+
+        (c) => {
+            const { team, user } = c.req.valid("query");
+
+            // If both `team` and `user` are present, add a special `state`
+            // parameter to the OAuth request.
+            const state = team && user ? `&state=${team}:${user}` : "";
+
+            return c.redirect(
+                `https://accounts.google.com/o/oauth2/v2/auth?client_id=${c.env.GCP_CLIENT_ID}&redirect_uri=${c.env.REDIRECT_URI}&response_type=code&prompt=consent&access_type=offline&scope=openid%20email%20profile%20https://www.googleapis.com/auth/calendar${state}`
+            );
+        }
     )
 
     // OAuth callback, creates users if they don't exist.
@@ -24,6 +49,7 @@ app
         zValidator(
             "query",
             z.object({
+                state: z.string().optional(),
                 code: z.string(),
                 scope: z.string(),
                 authuser: z.string(),
@@ -32,7 +58,8 @@ app
         ),
 
         async (c) => {
-            const { code, scope } = c.req.valid("query");
+            const { state, code, scope } = c.req.valid("query");
+            const [teamId, userId] = state ? state.split(":") : [];
 
             // Check if the required scopes are present.
             if (!scope.includes("calendar")) {
@@ -61,32 +88,144 @@ app
                     picture: payload.picture,
                     accessToken: token.access_token,
                     refreshToken: token.refresh_token,
+                    token: createId(),
                 });
             }
 
-            return c.json({ token, payload, user });
+            // If both a `teamId` and a `userId` are present, create a new
+            // Slack user and link it to the Google user.
+            const slackUser =
+                teamId && userId
+                    ? await createSlackUser(c, {
+                          id: crypto.randomUUID(),
+                          createdAt: Date.now(),
+                          updatedAt: Date.now(),
+                          user: user.id,
+                          slack_team: teamId,
+                          slack_user: userId,
+                      })
+                    : null;
+
+            return c.json({ user: user.id, slack_user: slackUser?.id });
         }
     )
 
     // Generate a new Google Meet link.
     .get("/create", async (c) => {
-        const user = await getUserByEmail(c, "juri.adams@googlemail.com");
+        const token = c.req.header("Authorization");
+        if (!token) return c.json({ error: "Missing Authorization header." });
 
-        if (!user) return c.json({ error: "Could not find user." });
+        const user = await getUserByToken(c, token.replace("Bearer ", ""));
+        if (!user) return c.json({ error: "Invalid token." });
 
-        const token = await refreshToken(c, user.refreshToken);
-        const calendar = await getPrimaryCalendar(token.access_token);
-        const event = await createEvent(token.access_token, calendar.id);
+        const meet = await createMeet(c, user);
 
-        // Delete the event while continuing processing the request.
-        c.executionCtx.waitUntil(
-            deleteEvent(token.access_token, calendar.id, event.id)
-        );
+        return c.json(meet);
+    })
 
-        return c.json({
-            host: user.email,
-            url: event.hangoutLink,
-        });
-    });
+    .post(
+        "/slack/commands",
+
+        zValidator(
+            "form",
+            z.object({
+                token: z.string(),
+                team_id: z.string(),
+                team_domain: z.string(),
+                channel_id: z.string(),
+                channel_name: z.string(),
+                user_id: z.string(),
+                user_name: z.string(),
+                command: z.string(),
+                text: z.string(),
+                api_app_id: z.string(),
+                is_enterprise_install: z.string(),
+                response_url: z.string(),
+                trigger_id: z.string(),
+            })
+        ),
+
+        async (c) => {
+            const { team_id, user_id } = c.req.valid("form");
+
+            const slackUser = await getSlackUser(c, team_id, user_id);
+            if (!slackUser) {
+                return c.json({
+                    response_type: "ephemeral",
+                    blocks: [
+                        {
+                            type: "section",
+                            text: {
+                                type: "mrkdwn",
+                                text: "Please sign in to create new Google Meets!",
+                            },
+                        },
+                        {
+                            type: "actions",
+                            elements: [
+                                {
+                                    type: "button",
+                                    text: {
+                                        type: "plain_text",
+                                        text: "Sign in",
+                                    },
+                                    color: "primary",
+                                    url: `https://meet.jrdms.workers.dev/auth/sign-in?team=${team_id}&user=${user_id}`,
+                                },
+                            ],
+                        },
+                    ],
+                });
+            }
+
+            const user = await getUserForSlackUser(c, slackUser);
+            if (!user) {
+                // TODO: Delete the existing `SlackUser` and create a new one.
+                return c.json({
+                    response_type: "ephemeral",
+                    blocks: [
+                        {
+                            type: "section",
+                            text: {
+                                type: "mrkdwn",
+                                text: "Please sign in to create new Google Meets!",
+                            },
+                        },
+                        {
+                            type: "actions",
+                            elements: [
+                                {
+                                    type: "button",
+                                    text: {
+                                        type: "plain_text",
+                                        text: "Sign in",
+                                    },
+                                    color: "primary",
+                                    url: `https://meet.jrdms.workers.dev/auth/sign-in?team=${team_id}&user=${user_id}`,
+                                },
+                            ],
+                        },
+                    ],
+                });
+            }
+
+            const meet = await createMeet(c, user);
+
+            return c.json({
+                response_type: "in_channel",
+                blocks: [
+                    {
+                        type: "section",
+                        text: {
+                            type: "mrkdwn",
+                            text: `*<@${user_id}> started a new Google Meet!*\n<${
+                                meet.url
+                            }|${meet.url.replace("https://", "")}>`,
+                        },
+                    },
+                ],
+            });
+        }
+    );
 
 export default app;
