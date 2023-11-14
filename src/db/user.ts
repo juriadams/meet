@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { Bindings } from "../types/worker";
 import { db } from ".";
-import { users } from "../../db/migrations/schema";
+import { users } from "../../db/schema";
 import { eq } from "drizzle-orm";
 
 type User = typeof users.$inferSelect;
