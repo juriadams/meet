@@ -28,8 +28,17 @@ Upon successful execution, the service will return a response in the following f
 ```json
 {
     "host": "juri@adams.sh",
-    "url": "https://meet.google.com/f930-4862-a0df"
+    "url": "https://meet.google.com/szq-nhnj-krt"
 }
 ```
 
 This response includes the hosting account and the unique URL for your Google Meet.
+
+## Credits
+
+This project is powered by the following tools and libraries:
+
+-   ⚡️ [hono](https://github.com/honojs/hono) — A flexible framework for creating scalable serverless applications.
+-   ⛅ [Cloudflare Workers](https://workers.cloudflare.com) — A high-speed edge runtime ensuring seamless experience.
+-   🚀 [Turso](https://turso.tech) — An edge database optimized for high-performance data retrieval.
+-   ✨ [drizzle](https://orm.drizzle.team) — A powerful ORM simplifying complicated database operations.
