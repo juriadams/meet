@@ -3,7 +3,7 @@ import { Bindings } from "../types/worker";
 import { getUserByToken } from "../db/user";
 import { createMeet } from "../lib/meet";
 
-export const meet = new Hono<{ Bindings: Bindings }>().get(
+export const meet = new Hono<{ Bindings: Bindings }>().post(
     "/create",
     async (c) => {
         const token = c.req.header("Authorization");
