@@ -20,7 +20,7 @@ export const getCalendars = async (
             },
         }
     )
-        .then((res) => res.json<{ items: Calendar[] }>())
+        .then((res) => res.json() as unknown as { items: Calendar[] })
         .then((res) => res.items);
 
     console.log(`get calendars: ${Date.now() - start}ms`);

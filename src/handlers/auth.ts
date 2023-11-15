@@ -93,6 +93,10 @@ export const auth = new Hono<{ Bindings: Bindings }>()
                       })
                     : null;
 
-            return c.json({ user: user.id, slack_user: slackUser?.id });
+            return c.json({
+                user: user.id,
+                slack_user: slackUser?.id,
+                token: user.token,
+            });
         }
     );

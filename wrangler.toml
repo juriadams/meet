@@ -3,4 +3,4 @@ compatibility_date = "2023-01-01"
 main = "src/index.ts"
 
 [vars]
-REDIRECT_URI = "https://meet.jrdms.workers.dev/auth/callback"
+REDIRECT_URI = "https://meet.jrd.ms/auth/callback"

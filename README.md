@@ -8,7 +8,7 @@ Follow the steps below to generate your Google Meet links:
 
 ### 1. Sign In
 
-Start by navigating to the sign-in page at [`/auth/sign-in`](https://meet.jrdms.workers.dev) and logging in using your Google account.
+Start by navigating to the sign-in page at [`/auth/sign-in`](https://meet.jrd.ms/auth/sign-in) and logging in using your Google account.
 
 ### 2. Obtain API Key
 
@@ -16,10 +16,10 @@ After you've signed in, an API key will be displayed. Copy this key to use in St
 
 ### 3. Create Meeting Link
 
-To generate your Google Meet link, make a `POST` request to [`/meet/create`](https://meet.jrdms.workers.dev/meet/create) with the API key included:
+To generate your Google Meet link, make a `POST` request to [`/meet/create`](https://meet.jrd.ms/meet/create) with the API key included:
 
 ```
-curl -X POST https://meet.jrdms.workers.dev/meet/create \
+curl -X POST https://meet.jrd.ms/meet/create \
      -H 'Authorization: Bearer <API KEY>'
 ```
 
