@@ -11,6 +11,8 @@ export const Layout: FC = ({ children }) => (
             <script src="https://cdn.tailwindcss.com" />
         </head>
 
-        <body class="flex items-center justify-around">{children}</body>
+        <body class="flex items-center justify-around py-12 px-6">
+            {children}
+        </body>
     </html>
 );

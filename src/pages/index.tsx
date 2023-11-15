@@ -2,6 +2,7 @@ import { Context } from "hono";
 import { Bindings } from "../types/worker";
 import { Layout } from "./components/Layout";
 import Chat from "./components/Chat";
+import Link from "./components/Link";
 
 export const index = (c: Context<{ Bindings: Bindings }>) =>
     c.html(
@@ -20,28 +21,18 @@ export const index = (c: Context<{ Bindings: Bindings }>) =>
                         <Chat />
 
                         <p class="ml-1 text-xs space-x-3">
-                            <a
-                                class="text-slate-400 hover:text-slate-500 transition"
-                                href="/auth/sign-in"
-                            >
-                                API
-                            </a>
+                            <Link href="/auth/sign-in">API</Link>
 
-                            <a
-                                class="text-slate-400 hover:text-slate-500 transition"
-                                href="/privacy"
-                            >
-                                Privacy Policy
-                            </a>
+                            <Link href="/privacy">Privacy</Link>
 
-                            <a
-                                class="text-slate-400 hover:text-slate-500 transition"
+                            <Link href="/terms">Terms of Service</Link>
+
+                            <Link
                                 href="https://github.com/juriadams/meet"
                                 target="_blank"
-                                rel="noopener noreferrer"
                             >
                                 GitHub
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </div>

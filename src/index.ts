@@ -5,9 +5,13 @@ import { meet } from "./handlers/meet";
 import { auth } from "./handlers/auth";
 import { slack } from "./handlers/slack";
 import { index } from "./pages";
+import { privacy } from "./pages/privacy";
+import terms from "./pages/terms";
 
 const app = new Hono<{ Bindings: Bindings }>()
     .get("/", index)
+    .get("/privacy", privacy)
+    .get("/terms", terms)
 
     // Handle authentication related requests.
     .route("/auth", auth)
