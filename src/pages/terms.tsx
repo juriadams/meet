@@ -57,5 +57,3 @@ export const terms = (c: Context<{ Bindings: Bindings }>) =>
             </div>
         </Layout>
     );
-
-export default terms;

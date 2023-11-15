@@ -6,9 +6,10 @@ import { auth } from "./handlers/auth";
 import { slack } from "./handlers/slack";
 import { index } from "./pages";
 import { privacy } from "./pages/privacy";
-import terms from "./pages/terms";
+import { terms } from "./pages/terms";
 
 const app = new Hono<{ Bindings: Bindings }>()
+    // Handle requests to static pages.
     .get("/", index)
     .get("/privacy", privacy)
     .get("/terms", terms)

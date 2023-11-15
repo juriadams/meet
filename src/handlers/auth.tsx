@@ -7,6 +7,7 @@ import { decode } from "@tsndr/cloudflare-worker-jwt";
 import { createUser, getUserByEmail } from "../db/user";
 import { createSlackUser } from "../db/slack";
 import { createId } from "@paralleldrive/cuid2";
+import Success from "../pages/success";
 
 export const auth = new Hono<{ Bindings: Bindings }>()
     .get(
@@ -93,10 +94,6 @@ export const auth = new Hono<{ Bindings: Bindings }>()
                       })
                     : null;
 
-            return c.json({
-                user: user.id,
-                slack_user: slackUser?.id,
-                token: user.token,
-            });
+            return c.html(<Success user={user} slackUser={slackUser} />);
         }
     );
